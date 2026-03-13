@@ -25,10 +25,27 @@ class PostHeader extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: post.userAvatarUrl,
                 fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: Colors.grey.shade200),
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.person, size: 18),
+                fadeInDuration: const Duration(milliseconds: 300),
+                fadeOutDuration: const Duration(milliseconds: 100),
+                placeholder: (context, url) => Container(
+                  color: const Color(0xFFF0F0F0),
+                  height: 375,
+                  width: double.infinity,
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 375,
+                  color: const Color(0xFFF0F0F0),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.image_not_supported_outlined,
+                           color: Colors.grey, size: 40),
+                      SizedBox(height: 8),
+                      Text("Image unavailable",
+                           style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -76,9 +93,9 @@ class PostHeader extends StatelessWidget {
             ),
           ),
           // Follow + more button
-          Text(
+          const Text(
             'Follow',
-            style: const TextStyle(
+            style: TextStyle(
               color: Color(0xFF3897F0),
               fontSize: 13.5,
               fontWeight: FontWeight.bold,

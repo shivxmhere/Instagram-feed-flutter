@@ -2,27 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram_feed/models/post_model.dart';
 import 'package:instagram_feed/providers/post_interaction_provider.dart';
+import 'package:instagram_feed/utils/snackbar_helper.dart';
 
-class PostFooter extends ConsumerWidget {
+class PostFooter extends ConsumerStatefulWidget {
   final PostModel post;
 
   const PostFooter({super.key, required this.post});
 
+  @override
+  ConsumerState<PostFooter> createState() => _PostFooterState();
+}
+
+class _PostFooterState extends ConsumerState<PostFooter> {
+  bool _isExpanded = false;
+
   void _showSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 3),
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.black87,
-    ));
+    showInstagramSnackbar(context, message);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final interactions = ref.watch(postInteractionProvider);
-    final interaction = interactions[post.id];
-    final likeCount = interaction?.likeCount ?? post.likeCount;
+    final interaction = interactions[widget.post.id];
+    final likeCount = interaction?.likeCount ?? widget.post.likeCount;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -40,27 +42,37 @@ class PostFooter extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           // Caption
-          RichText(
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              style: const TextStyle(fontSize: 13.5, color: Colors.black),
-              children: [
-                TextSpan(
-                  text: post.username,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(text: ' ${post.caption}'),
-              ],
+          GestureDetector(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: RichText(
+              maxLines: _isExpanded ? null : 2,
+              overflow: _isExpanded
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
+              text: TextSpan(
+                style: const TextStyle(color: Colors.black, fontSize: 13.5),
+                children: [
+                  TextSpan(
+                    text: widget.post.username,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: ' ${widget.post.caption}'),
+                  if (!_isExpanded && widget.post.caption.length > 100)
+                    const TextSpan(
+                      text: ' more',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 4),
           // Comment count
-          if (post.commentCount > 0) ...[
+          if (widget.post.commentCount > 0) ...[
             GestureDetector(
               onTap: () => _showSnackbar(context, 'Comments coming soon!'),
               child: Text(
-                'View all ${post.commentCount} comments',
+                'View all ${widget.post.commentCount} comments',
                 style: TextStyle(
                   color: Colors.grey.shade600,
                   fontSize: 13.5,
@@ -71,7 +83,7 @@ class PostFooter extends ConsumerWidget {
           ],
           // Time ago
           Text(
-            post.timeAgo,
+            widget.post.timeAgo,
             style: TextStyle(
               color: Colors.grey.shade500,
               fontSize: 11,

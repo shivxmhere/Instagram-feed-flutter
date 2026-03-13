@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram_feed/providers/post_interaction_provider.dart';
+import 'package:instagram_feed/utils/snackbar_helper.dart';
 
 class PostActions extends ConsumerStatefulWidget {
   final String postId;
@@ -21,14 +22,22 @@ class _PostActionsState extends ConsumerState<PostActions>
     super.initState();
     _likeAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 200),
     );
     _likeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.3, end: 1.0), weight: 50),
-    ]).animate(
-      CurvedAnimation(parent: _likeAnimController, curve: Curves.easeInOut),
-    );
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 1.4).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 40, // 80ms / 200ms
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.4, end: 0.9).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 30, // 60ms / 200ms
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.9, end: 1.0).chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 30, // 60ms / 200ms
+      ),
+    ]).animate(_likeAnimController);
   }
 
   @override
@@ -47,13 +56,7 @@ class _PostActionsState extends ConsumerState<PostActions>
   }
 
   void _showSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 3),
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.black87,
-    ));
+    showInstagramSnackbar(context, message);
   }
 
   @override

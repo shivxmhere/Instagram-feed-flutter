@@ -9,6 +9,7 @@ import 'package:instagram_feed/widgets/top_bar.dart';
 import 'package:instagram_feed/widgets/story_tray.dart';
 import 'package:instagram_feed/widgets/post_card.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:instagram_feed/widgets/shimmer_post_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -62,14 +63,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(44),
-        child: SafeArea(child: const TopBar()),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(44),
+        child: SafeArea(child: TopBar()),
       ),
       body: feedState.isLoadingInitial
           ? const ShimmerFeed()
           : CustomScrollView(
               controller: _scrollController,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              cacheExtent: 1000,
               slivers: [
                 // Stories
                 SliverToBoxAdapter(
@@ -97,18 +102,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     (context, index) {
                       if (index == feedState.posts.length) {
                         if (feedState.isLoadingMore) {
-                          return const SizedBox(
-                            height: 60,
-                            child: Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
+                          return const Column(
+                            children: [
+                              ShimmerPostCard(),
+                              ShimmerPostCard(),
+                            ],
                           );
                         }
                         return const SizedBox.shrink();
